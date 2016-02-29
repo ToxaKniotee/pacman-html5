@@ -3,1071 +3,854 @@
 /******************************************************************************
 ** Pacman
 ******************************************************************************/
+function Pacman(_context, _radio, _x, _y) {
+    /* Pacman coordinates */
+    this.x = _x;
+    this.y = _y;
 
-function Pacman ( _context, _radio, _x, _y ) {
-	
-	/* Posicion de x y y */
+    /* Radio */
+    this.radio = _radio ;
+    this.diametro = this.radio * 2;
 
-	this.x = _x;
-	this.y = _y;
+    /* Direction which pacman is facing */
+    this.dir = 3;
 
-	/* Radio */
+    /* Animation status */
+    this.status = false;
 
-	this.radio = _radio ;
-	this.diametro = this.radio * 2;
+    /* Icnrement and animation increment */
+    this.anim = 0;
+    this.incr = 0.1;
 
-	/* Direccion a donde apunta pacman */
+    /* Canvas context */
+    this.context = _context;
 
-	this.dir = 3;
+    /* Velocidad del movimiento del pacman */
 
-	/* estado de la animacion */
+    this.speed = 5;
 
-	this.status = false;
-
-	/* Incremeento y el valor del incremento de la animación */
-
-	this.anim = 0;
-	this.incr = 0.1;
-
-	/* Declaramos el contexto para poder dibujar */
-
-	this.context = _context;
-
-	/* Velocidad del movimiento del pacman */
-
-	this.speed = 5;
-
-	/* Sonido waka */
-
-	this.mainSound = new Audio( "PacmanWakaWaka1.mp3" );
-	this.mainSound.loop = true;
-
+    /* waka waka sound */
+    this.mainSound = new Audio("PacmanWakaWaka1.mp3");
+    this.mainSound.loop = true;
 };
 
-/* Funciones de pacman */
-
+/* Pacman functionts */
+/* Draw pacman */
 Pacman.prototype.draw = function() {
-	
-	/* Creamos la variable "x" y "y" para dibujar la segunda linea del
-	** pacman */
-	
-	var x1, 
-		y1, 
-		dirx = this.radio * Math.cos( ( 5 + 2 * this.dir ) / 4 * Math.PI +
-			this.anim ),
-		diry = this.radio * Math.sin( ( 5 + 2 * this.dir ) / 4 * Math.PI +
-			this.anim );
-	
-	/* Dependiendo de la dirección del pacman creamos el valor
-	** correspondiente */
-	
-	if( this.dir % 2 == 1 ){
-		
-		x1 = this.x + dirx;
-		y1 = this.y - diry;
-		
-	}else if( this.dir % 2 == 0 ){
-		
-		x1 = this.x - dirx;
-		y1 = this.y + diry;
-		
-	}
-	
-	/* Cambiamos las propiedades de la linea y el relleno */
-	
-	this.context.fillStyle = "yellow";
-	this.context.lineWidth = 0;
-	
-	/* Empezamos a dibujar a pacman */
-	
-	this.context.beginPath();
-	
-	this.context.arc( this.x, this.y, this.radio, - ( 1 - 2 * this.dir ) / 4
-		* Math.PI - this.anim , ( 5 + 2 * this.dir ) / 4 * Math.PI + 
-		this.anim );
-	this.context.lineTo( this.x, this.y );
-	this.context.lineTo( x1, y1 );
-	this.context.stroke();
-	this.context.fill();
+    /* Creamos la variable "x" y "y" para dibujar la segunda linea del pacman */
+    var x1, y1,
+        dirx = this.radio * Math.cos((5 + 2 * this.dir) / 4 * Math.PI +
+            this.anim),
+        diry = this.radio * Math.sin((5 + 2 * this.dir) / 4 * Math.PI +
+            this.anim);
 
+    /* Dependiendo de la dirección del pacman creamos el valor
+     * correspondiente */
+    if (this.dir % 2 == 1) {
+        x1 = this.x + dirx;
+        y1 = this.y - diry;
+    } else if (this.dir % 2 == 0) {
+        x1 = this.x - dirx;
+        y1 = this.y + diry;
+    }
+
+    /* Cambiamos las propiedades de la linea y el relleno */
+    this.context.fillStyle = "yellow";
+    this.context.lineWidth = 0;
+
+    /* Empezamos a dibujar a pacman */
+    this.context.beginPath();
+
+    this.context.arc(
+        this.x, this.y,
+        this.radio, - (1 - 2 * this.dir) / 4 * Math.PI - this.anim,
+        (5 + 2 * this.dir) / 4 * Math.PI +this.anim
+    );
+    this.context.lineTo(this.x, this.y);
+    this.context.lineTo(x1, y1);
+    this.context.stroke();
+    this.context.fill();
 };
 
-Pacman.prototype.changeDir = function( newDir ) {
-	
-	this.dir = newDir;
-
-	if( !this.status )
-		this.changeAnim();
-
+Pacman.prototype.changeDir = function(newDir) {
+    this.dir = newDir;
+    if (!this.status) this.changeAnim();
 };
 
 Pacman.prototype.changeAnim = function() {
-	
-	/* Detiene o comienza la música */
+    /* Detiene o comienza la música */
+    if (this.status)
+        this.mainSound.pause();
+    else
+        this.mainSound.play();
 
-	if( this.status )
-		this.mainSound.pause();
-	else
-		this.mainSound.play();
-
-	/* Cambia entre continuar avanzando o detenerse */
-
-	this.status = !this.status;
-
+    /* Cambia entre continuar avanzando o detenerse */
+    this.status = !this.status;
 };
 
 Pacman.prototype.checkCollision = function() {
+    var nextPosition = context.getImageData(this.x - this.radio, this.y -
+        this.radio, this.diametro, this.diametro);
+    var x = -1;
+    var y = 0;
 
-	var nextPosition = context.getImageData( this.x - this.radio, this.y -
-		this.radio, this.diametro, this.diametro );
-	var x = -1;
-	var y = 0;
+    for (var i = 0; i < this.diametro * this.diametro * 4; i += 4) {
+        if (++x == this.diametro) {
+            x = 0;
+            y++;
+        }
 
-	for( var i = 0; i < this.diametro * this.diametro * 4; i += 4 ){
+        /* azul */
+        if (nextPosition.data[i + 0] == 0 &&
+            nextPosition.data[i + 1] == 0 &&
+            nextPosition.data[i + 2] == 255)
+        {
+            return true;
+        }
 
-		if( ++x == this.diametro ){
+        /* Fantasma */
+        if ((nextPosition.data[i + 0] == 255 && nextPosition.data[i + 1] == 0   && nextPosition.data[i + 2] == 0 ) ||
+            (nextPosition.data[i + 0] == 255 && nextPosition.data[i + 1] == 204 && nextPosition.data[i + 2] == 255) ||
+            (nextPosition.data[i + 0] == 255 && nextPosition.data[i + 1] == 204 && nextPosition.data[i + 2] == 102) ||
+            (nextPosition.data[i + 0] == 0   && nextPosition.data[i + 1] == 255 && nextPosition.data[i + 2] == 255) ||
+            (nextPosition.data[i + 0] == 204 && nextPosition.data[i + 1] == 204 && nextPosition.data[i + 2] == 204))
+        {
+            alert("Perdiste");
+            location.reload();
+        }
 
-			x = 0;
-			y++;
-
-		}
-		
-		/* azul */
-
-		if( nextPosition.data[i + 0] == 0 &&
-			nextPosition.data[i + 1] == 0 &&
-			nextPosition.data[i + 2] == 255 )
-		{
-			
-			return true;
-			
-		}
-
-		/* Fantasma */
-
-		if( (nextPosition.data[i + 0] == 255 && nextPosition.data[i + 1] == 0   && nextPosition.data[i + 2] == 0  ) ||
-			(nextPosition.data[i + 0] == 255 && nextPosition.data[i + 1] == 204 && nextPosition.data[i + 2] == 255) ||
-			(nextPosition.data[i + 0] == 255 && nextPosition.data[i + 1] == 204 && nextPosition.data[i + 2] == 102) ||
-			(nextPosition.data[i + 0] == 0   && nextPosition.data[i + 1] == 255 && nextPosition.data[i + 2] == 255) ||
-			(nextPosition.data[i + 0] == 204 && nextPosition.data[i + 1] == 204 && nextPosition.data[i + 2] == 204) )
-		{
-			
-			alert("Perdiste");
-			location.reload();
-
-		}
-
-		/* Blanco */
-
-		if( nextPosition.data[i + 0] == 255 &&
-			nextPosition.data[i + 1] == 255 &&
-			nextPosition.data[i + 2] == 255 )
-		{
-
-			dots.deleteDot( this.x - this.radio + x, this.y - this.radio + y );
-
-		}
-
-	}
-	
-	return false;
-	
+        /* Blanco */
+        if (nextPosition.data[i + 0] == 255 &&
+            nextPosition.data[i + 1] == 255 &&
+            nextPosition.data[i + 2] == 255)
+        {
+            dots.deleteDot(this.x - this.radio + x, this.y - this.radio + y);
+        }
+    }
+    return false;
 }
 
 Pacman.prototype.move = function() {
-	
-	/* Respaldamos los datos anteriores en caso de que colisione podamos dejarlo en donde estaba */
+    /* Respaldamos los datos anteriores en caso de que colisione podamos
+     * dejarlo en donde estaba */
+    var x = this.x;
+    var y = this.y;
+    var anim = this.anim;
+    var incr = this.incr;
 
-	var x = this.x;
-	var y = this.y;
-	var anim = this.anim;
-	var incr = this.incr;
+    /* Aumentamos el valor de la anim */
+    if (this.anim > Math.PI / 4 || this.anim < 0)
+        this.incr *= -1;
 
-	/* Aumentamos el valor de la anim */
+    this.anim += this.incr;
 
-	if( this.anim > Math.PI / 4 || this.anim < 0 )
-		this.incr *= -1;
+    /* Aumentamos el valor de x o y para el movimiento */
+    switch (this.dir) {
+        /* Arriba */
+        case 0:
+            this.y -= this.speed;
+            break;
 
-	this.anim += this.incr;
+        /* Abajo */
+        case 2:
+            this.y += this.speed;
+            break;
 
-	/* Aumentamos el valor de x o y para el movimiento */
+        /* Izquierda */
+        case 3:
+            this.x -= this.speed;
+            break;
 
-	switch( this.dir ){
+        /* Derecha */
+        case 1:
+            this.x += this.speed;
+            break;
+    }
 
-		/* Arriba */
-		case 0:
-		
-			this.y -= this.speed;
-			break;
-		
-		/* Abajo */
-		case 2:
-		
-			this.y += this.speed;
-			break;
-		
-		/* Izquierda */
-		case 3:
-			
-			this.x -= this.speed;
-			break;
-			
-		/* Derecha */
-		case 1:
-			
-			this.x += this.speed;
-			break;
+    /* Checamos si pacman pasa la zona de teletransportación */
+    if (this.x > 420) {
+        this.x = 0;
+    } else if (this.x < 0) {
+        this.x = 420;
+    };
 
-	}
-
-	/* Checamos si pacman pasa la zona de teletransportación */
-
-	if ( this.x > 420 ) {
-
-		this.x = 0;
-
-	}else if ( this.x < 0 ) {
-
-		this.x = 420;
-
-	};
-
-	/* Si hubo una collision regresamos los datos a como estaban y cancelamos los siuientes movimientos */
-
-	if( this.checkCollision() ){
-		this.x = x;
-		this.y = y;
-		this.anim = anim;
-		this.incr = incr;
-		this.changeAnim();
-	}
-
+    /* Si hubo una collision regresamos los datos a como estaban y cancelamos
+     * los siguientes movimientos */
+    if (this.checkCollision()) {
+        this.x = x;
+        this.y = y;
+        this.anim = anim;
+        this.incr = incr;
+        this.changeAnim();
+    }
 };
-
 
 /******************************************************************************
 ** Interseccion
 ******************************************************************************/
+function Interseccion (x, y, a, b, c, d) {
+    this.x = x;
+    this.y = y;
 
-function Interseccion ( x, y, a, b, c, d ) {
-	
-	this.x = x;
-	this.y = y;
-
-	this.direcc = new Array();
-	this.direcc[0] = a;
-	this.direcc[1] = b;
-	this.direcc[2] = c;
-	this.direcc[3] = d;
-
+    this.direcc = new Array();
+    this.direcc[0] = a;
+    this.direcc[1] = b;
+    this.direcc[2] = c;
+    this.direcc[3] = d;
 }
 
 /******************************************************************************
 ** Fantasma
 ******************************************************************************/
+function Ghost (color) {
+    this.color = color;
+    this.scale = 0.20;
+    this.speed = 3;
+    this.intersecciones = new Array();
 
-function Ghost ( color ) {
-	
-	this.color = color;
-	this.scale = 0.20;
-	this.speed = 3;
-	this.intersecciones = new Array();
+    this.fillIntersecciones();
 
-	this.fillIntersecciones();
-
-	if(this.color == "#FF0000"){
-		this.setInterseccion(5);
-		this.dir = 0;
-	}else if( this.color == "#FFCCFF" ){
-		this.setInterseccion(0);
-		this.dir = 0;
-	}
-	else if(this.color == "#FFCC66"){
-		this.setInterseccion(60);
-		this.dir = 2;
-	}
-	else if(this.color == "#00FFFF"){
-		this.setInterseccion(63);
-		this.dir = 2;
-	}else{
-		this.setInterseccion( Math.floor(Math.random() * 64) );
-		this.dir = 0;
-		this.color = "#CCCCCC";
-	}
-
+    if (this.color == "#FF0000") {
+        this.setInterseccion(5);
+        this.dir = 0;
+    } else if (this.color == "#FFCCFF") {
+        this.setInterseccion(0);
+        this.dir = 0;
+    } else if (this.color == "#FFCC66") {
+        this.setInterseccion(60);
+        this.dir = 2;
+    } else if (this.color == "#00FFFF") {
+        this.setInterseccion(63);
+        this.dir = 2;
+    } else {
+        this.setInterseccion(Math.floor(Math.random() * 64));
+        this.dir = 0;
+        this.color = "#CCCCCC";
+    }
 };
 
 Ghost.prototype.draw = function() {
-	
-	var _x = this.x - 60 * this.scale;
-	var _y = this.y - 73 * this.scale;
+    var _x = this.x - 60 * this.scale;
+    var _y = this.y - 73 * this.scale;
 
-	context.fillStyle = this.color;
+    context.fillStyle = this.color;
 
-	context.beginPath();
-	context.moveTo(_x, _y + 64 * this.scale );
-	context.lineTo(_x, _y + 126 * this.scale );
-	context.arc(_x + 20 * this.scale,_y + 126 * this.scale, 20 * this.scale, Math.PI, 0, true );
-	context.arc(_x + 60 * this.scale,_y + 126 * this.scale, 20 * this.scale, Math.PI, 0, true );
-	context.arc(_x + 100 * this.scale,_y + 126 * this.scale, 20 * this.scale, Math.PI, 0, true );
-	context.lineTo(_x + 120 * this.scale,_y + 64 * this.scale );
-	context.arc(_x + 60 * this.scale,_y + 64 * this.scale, 60 * this.scale, 0, Math.PI, true );
-	context.fill();
-	
+    context.beginPath();
+    context.moveTo(_x, _y + 64 * this.scale);
+    context.lineTo(_x, _y + 126 * this.scale);
+    context.arc(_x + 20 * this.scale,_y + 126 * this.scale, 20 * this.scale, Math.PI, 0, true);
+    context.arc(_x + 60 * this.scale,_y + 126 * this.scale, 20 * this.scale, Math.PI, 0, true);
+    context.arc(_x + 100 * this.scale,_y + 126 * this.scale, 20 * this.scale, Math.PI, 0, true);
+    context.lineTo(_x + 120 * this.scale,_y + 64 * this.scale);
+    context.arc(_x + 60 * this.scale,_y + 64 * this.scale, 60 * this.scale, 0, Math.PI, true);
+    context.fill();
 
-	context.beginPath();
-	context.moveTo(_x + 8, _y + 10 );
-	context.arc(   _x + 8, _y + 10,  4.5, 0, 2*Math.PI, true); 
-	context.moveTo(_x + 17 , _y + 10 );
-	context.arc(   _x + 17 , _y + 10,  4.5, 0, 2*Math.PI, true );
+    context.beginPath();
+    context.moveTo(_x + 8, _y + 10);
+    context.arc(  _x + 8, _y + 10,  4.5, 0, 2*Math.PI, true);
+    context.moveTo(_x + 17 , _y + 10);
+    context.arc(  _x + 17 , _y + 10,  4.5, 0, 2*Math.PI, true);
 
+    context.fillStyle = "white";
+    context.fill();
 
-	context.fillStyle = "white";
-	context.fill();
+    switch (this.dir) {
+        case 0:
+            context.beginPath();
+            /* Ojos arriba */
+            context.moveTo(_x + 8, _y + 7.5);
+            context.arc(  _x + 8, _y + 7.5, 2, 0, 2*Math.PI, true);
+            context.moveTo(_x + 17, _y + 7.5);
+            context.arc(  _x + 17, _y + 7.5, 2, 0, 2*Math.PI, true);
+            context.fillStyle = "black";
+            context.fill();
+            break;
+        case 1:
+            context.beginPath();
+            context.moveTo(_x + 10.5, _y + 10);
+            /* Ojos derecha */
+            context.arc(  _x + 10.5, _y + 10, 2, 0, 2*Math.PI, true);
+            context.moveTo(_x + 19.5, _y + 10);
+            context.arc(  _x + 19.5, _y + 10, 2, 0, 2*Math.PI, true);
+            context.fillStyle = "black";
+            context.fill();
+            break;
 
+        case 2:
+            context.beginPath();
+            context.moveTo(_x + 8, _y + 12.5);
+            /* Ojos abajo */
+            context.arc(  _x + 8, _y + 12.5, 2, 0, 2*Math.PI, true);
+            context.moveTo(_x + 17, _y + 12.5);
+            context.arc(  _x + 17, _y + 12.5, 2, 0, 2*Math.PI, true);
+            context.fillStyle = "black";
+            context.fill();
+            break;
 
-	switch (this.dir){
-
-	case 0:	
-	
-	context.beginPath();
-	context.moveTo(_x + 8, _y + 7.5 );							//ojos arriba
-	context.arc(   _x + 8, _y + 7.5, 2, 0, 2*Math.PI, true);
-	context.moveTo(_x + 17, _y + 7.5 );
-	context.arc(   _x + 17, _y + 7.5, 2, 0, 2*Math.PI, true);
-	context.fillStyle = "black";
-	context.fill();
-	break;
-
-	case 1:
-
-	context.beginPath();
-	context.moveTo(_x + 10.5, _y + 10 );							//ojos derecha
-	context.arc(   _x + 10.5, _y + 10, 2, 0, 2*Math.PI, true);
-	context.moveTo(_x + 19.5, _y + 10 );
-	context.arc(   _x + 19.5, _y + 10, 2, 0, 2*Math.PI, true);
-	context.fillStyle = "black";
-	context.fill();
-	break;
-
-	case 2:
-
-	context.beginPath();
-	context.moveTo(_x + 8, _y + 12.5 );							//ojos abajo
-	context.arc(   _x + 8, _y + 12.5, 2, 0, 2*Math.PI, true);
-	context.moveTo(_x + 17, _y + 12.5 );
-	context.arc(   _x + 17, _y + 12.5, 2, 0, 2*Math.PI, true);
-	context.fillStyle = "black";
-	context.fill();
-	break;
-
-	case 3:
-
-	context.beginPath();
-	context.moveTo(_x + 5.5, _y + 10 );							//ojos izquierda
-	context.arc(   _x + 5.5, _y + 10, 2, 0, 2*Math.PI, true);
-	context.moveTo(_x + 14.5, _y + 10 );
-	context.arc(   _x + 14.5, _y + 10, 2, 0, 2*Math.PI, true);
-	context.fillStyle = "black";
-	context.fill();
-	break;
-
-
-
-	}
-	
+        case 3:
+            context.beginPath();
+            context.moveTo(_x + 5.5, _y + 10);
+            /* Ojos izquierda */
+            context.arc(  _x + 5.5, _y + 10, 2, 0, 2*Math.PI, true);
+            context.moveTo(_x + 14.5, _y + 10);
+            context.arc(  _x + 14.5, _y + 10, 2, 0, 2*Math.PI, true);
+            context.fillStyle = "black";
+            context.fill();
+            break;
+    }
 };
 
 Ghost.prototype.fillIntersecciones = function() {
-	
-	var scale = 146 / 37 * this.scale;
+    var scale = 146 / 37 * this.scale;
 
-	this.intersecciones.push( new Interseccion(  38 * scale,  38 * scale, -1,  1,  6, -1 ) ); /*  0 */
-	this.intersecciones.push( new Interseccion( 125 * scale,  38 * scale, -1, -1,  7,  0 ) ); /*  1 */
-	this.intersecciones.push( new Interseccion( 225 * scale,  38 * scale, -1, -1,  9,  1 ) ); /*  2 */
-	this.intersecciones.push( new Interseccion( 300 * scale,  38 * scale, -1,  4, 10, -1 ) ); /*  3 */
-	this.intersecciones.push( new Interseccion( 400 * scale,  38 * scale, -1,  5, 12, -1 ) ); /*  4 */
-	this.intersecciones.push( new Interseccion( 487 * scale,  38 * scale, -1, -1, 13,  4 ) ); /*  5 */
-	this.intersecciones.push( new Interseccion(  38 * scale, 113 * scale,  0,  7, 14, -1 ) ); /*  6 */
-	this.intersecciones.push( new Interseccion( 125 * scale, 113 * scale,  1,  8, 15,  6 ) ); /*  7 */
-	this.intersecciones.push( new Interseccion( 188 * scale, 113 * scale, -1, 10, 16,  7 ) ); /*  8 */
-	this.intersecciones.push( new Interseccion( 225 * scale, 133 * scale,  2, 11, -1,  8 ) ); /*  9 */
-	this.intersecciones.push( new Interseccion( 300 * scale, 113 * scale,  3, 11, -1,  8 ) ); /* 10 */
-	this.intersecciones.push( new Interseccion( 338 * scale, 113 * scale, -1, 12, 19,  8 ) ); /* 11 */
-	this.intersecciones.push( new Interseccion( 400 * scale, 113 * scale,  4, 13, 20, 11 ) ); /* 12 */
-	this.intersecciones.push( new Interseccion( 487 * scale, 113 * scale,  5, -1, 21, 12 ) ); /* 13 */
-	this.intersecciones.push( new Interseccion(  38 * scale, 175 * scale,  6, 15, -1, -1 ) ); /* 14 */
-	this.intersecciones.push( new Interseccion( 125 * scale, 175 * scale,  7, -1, 26, 14 ) ); /* 15 */
-	this.intersecciones.push( new Interseccion( 188 * scale, 175 * scale,  8, 17, -1, -1 ) ); /* 16 */
-	this.intersecciones.push( new Interseccion( 228 * scale, 175 * scale, -1, -1, 23, 16 ) ); /* 17 */
-	this.intersecciones.push( new Interseccion( 291 * scale, 175 * scale, -1, 19, 24, -1 ) ); /* 18 */
-	this.intersecciones.push( new Interseccion( 338 * scale, 175 * scale, 11, -1, -1, 18 ) ); /* 19 */
-	this.intersecciones.push( new Interseccion( 400 * scale, 175 * scale, 12, 21, 29, -1 ) ); /* 20 */
-	this.intersecciones.push( new Interseccion( 487 * scale, 175 * scale, 13, -1, -1, 20 ) ); /* 21 */
-	this.intersecciones.push( new Interseccion( 188 * scale, 238 * scale, -1, 23, 27, -1 ) ); /* 22 */
-	this.intersecciones.push( new Interseccion( 228 * scale, 238 * scale, 17, 24, -1, 22 ) ); /* 23 */
-	this.intersecciones.push( new Interseccion( 291 * scale, 238 * scale, 18, 25, -1, 23 ) ); /* 24 */
-	this.intersecciones.push( new Interseccion( 338 * scale, 238 * scale, -1, -1, 28, 24 ) ); /* 25 */
-	this.intersecciones.push( new Interseccion( 125 * scale, 300 * scale, 15, 27, 33, -1 ) ); /* 26 */
-	this.intersecciones.push( new Interseccion( 188 * scale, 300 * scale, 22, -1, 30, 26 ) ); /* 27 */
-	this.intersecciones.push( new Interseccion( 338 * scale, 300 * scale, 25, 29, 31, -1 ) ); /* 28 */
-	this.intersecciones.push( new Interseccion( 400 * scale, 300 * scale, 20, -1, 38, 28 ) ); /* 29 */
-	this.intersecciones.push( new Interseccion( 188 * scale, 356 * scale, 27, 31, 34, -1 ) ); /* 30 */
-	this.intersecciones.push( new Interseccion( 338 * scale, 356 * scale, 28, -1, 37, 30 ) ); /* 31 */
-	this.intersecciones.push( new Interseccion(  38 * scale, 418 * scale, -1, 33, 40, -1 ) ); /* 32 */
-	this.intersecciones.push( new Interseccion( 125 * scale, 418 * scale, 26, 34, 42, 32 ) ); /* 33 */
-	this.intersecciones.push( new Interseccion( 188 * scale, 418 * scale, 30, 35, -1, 33 ) ); /* 34 */
-	this.intersecciones.push( new Interseccion( 232 * scale, 418 * scale, -1, -1, 44, 34 ) ); /* 35 */
-	this.intersecciones.push( new Interseccion( 294 * scale, 418 * scale, -1, 37, 45, -1 ) ); /* 36 */
-	this.intersecciones.push( new Interseccion( 338 * scale, 418 * scale, 31, 38, -1, 36 ) ); /* 37 */
-	this.intersecciones.push( new Interseccion( 400 * scale, 418 * scale, 29, 39, 47, 37 ) ); /* 38 */
-	this.intersecciones.push( new Interseccion( 487 * scale, 418 * scale, -1, -1, 49, 38 ) ); /* 39 */
-	this.intersecciones.push( new Interseccion(  38 * scale, 475 * scale, 32, 41, -1, -1 ) ); /* 40 */
-	this.intersecciones.push( new Interseccion(  62 * scale, 475 * scale, -1, -1, 51, 40 ) ); /* 41 */
-	this.intersecciones.push( new Interseccion( 125 * scale, 475 * scale, 33, 43, 52, -1 ) ); /* 42 */
-	this.intersecciones.push( new Interseccion( 188 * scale, 475 * scale, -1, 44, 53, 42 ) ); /* 43 */
-	this.intersecciones.push( new Interseccion( 232 * scale, 475 * scale, 35, 45, -1, 43 ) ); /* 44 */
-	this.intersecciones.push( new Interseccion( 294 * scale, 475 * scale, 36, 46, -1, 44 ) ); /* 45 */
-	this.intersecciones.push( new Interseccion( 338 * scale, 475 * scale, -1, 47, 56, 45 ) ); /* 46 */
-	this.intersecciones.push( new Interseccion( 400 * scale, 475 * scale, 38, -1, 57, 46 ) ); /* 47 */
-	this.intersecciones.push( new Interseccion( 463 * scale, 475 * scale, -1, 49, 58, -1 ) ); /* 48 */
-	this.intersecciones.push( new Interseccion( 487 * scale, 475 * scale, 39, -1, -1, 48 ) ); /* 49 */
-	this.intersecciones.push( new Interseccion(  38 * scale, 531 * scale, -1, 51, 60, -1 ) ); /* 50 */
-	this.intersecciones.push( new Interseccion(  62 * scale, 531 * scale, 41, 52, -1, 50 ) ); /* 51 */
-	this.intersecciones.push( new Interseccion( 125 * scale, 531 * scale, 42, -1, -1, 51 ) ); /* 52 */
-	this.intersecciones.push( new Interseccion( 188 * scale, 531 * scale, 43, 54, -1, -1 ) ); /* 53 */
-	this.intersecciones.push( new Interseccion( 228 * scale, 531 * scale, -1, -1, 61, 53 ) ); /* 54 */
-	this.intersecciones.push( new Interseccion( 297 * scale, 531 * scale, -1, 56, 62, -1 ) ); /* 55 */
-	this.intersecciones.push( new Interseccion( 338 * scale, 531 * scale, 46, -1, -1, 55 ) ); /* 56 */
-	this.intersecciones.push( new Interseccion( 400 * scale, 531 * scale, 47, 58, -1, -1 ) ); /* 57 */
-	this.intersecciones.push( new Interseccion( 463 * scale, 531 * scale, 48, 59, -1, 57 ) ); /* 58 */
-	this.intersecciones.push( new Interseccion( 487 * scale, 531 * scale, -1, -1, 63, 58 ) ); /* 59 */
-	this.intersecciones.push( new Interseccion(  38 * scale, 588 * scale, 50, 61, -1, -1 ) ); /* 60 */
-	this.intersecciones.push( new Interseccion( 228 * scale, 588 * scale, 54, 62, -1, 60 ) ); /* 61 */
-	this.intersecciones.push( new Interseccion( 297 * scale, 588 * scale, 55, 63, -1, 61 ) ); /* 62 */
-	this.intersecciones.push( new Interseccion( 487 * scale, 588 * scale, 59, -1, -1, 62 ) ); /* 63 */
- 
+    this.intersecciones.push(new Interseccion( 38 * scale,  38 * scale, -1,  1,  6, -1)); /*  0 */
+    this.intersecciones.push(new Interseccion(125 * scale,  38 * scale, -1, -1,  7,  0)); /*  1 */
+    this.intersecciones.push(new Interseccion(225 * scale,  38 * scale, -1, -1,  9,  1)); /*  2 */
+    this.intersecciones.push(new Interseccion(300 * scale,  38 * scale, -1,  4, 10, -1)); /*  3 */
+    this.intersecciones.push(new Interseccion(400 * scale,  38 * scale, -1,  5, 12, -1)); /*  4 */
+    this.intersecciones.push(new Interseccion(487 * scale,  38 * scale, -1, -1, 13,  4)); /*  5 */
+    this.intersecciones.push(new Interseccion( 38 * scale, 113 * scale,  0,  7, 14, -1)); /*  6 */
+    this.intersecciones.push(new Interseccion(125 * scale, 113 * scale,  1,  8, 15,  6)); /*  7 */
+    this.intersecciones.push(new Interseccion(188 * scale, 113 * scale, -1, 10, 16,  7)); /*  8 */
+    this.intersecciones.push(new Interseccion(225 * scale, 133 * scale,  2, 11, -1,  8)); /*  9 */
+    this.intersecciones.push(new Interseccion(300 * scale, 113 * scale,  3, 11, -1,  8)); /* 10 */
+    this.intersecciones.push(new Interseccion(338 * scale, 113 * scale, -1, 12, 19,  8)); /* 11 */
+    this.intersecciones.push(new Interseccion(400 * scale, 113 * scale,  4, 13, 20, 11)); /* 12 */
+    this.intersecciones.push(new Interseccion(487 * scale, 113 * scale,  5, -1, 21, 12)); /* 13 */
+    this.intersecciones.push(new Interseccion( 38 * scale, 175 * scale,  6, 15, -1, -1)); /* 14 */
+    this.intersecciones.push(new Interseccion(125 * scale, 175 * scale,  7, -1, 26, 14)); /* 15 */
+    this.intersecciones.push(new Interseccion(188 * scale, 175 * scale,  8, 17, -1, -1)); /* 16 */
+    this.intersecciones.push(new Interseccion(228 * scale, 175 * scale, -1, -1, 23, 16)); /* 17 */
+    this.intersecciones.push(new Interseccion(291 * scale, 175 * scale, -1, 19, 24, -1)); /* 18 */
+    this.intersecciones.push(new Interseccion(338 * scale, 175 * scale, 11, -1, -1, 18)); /* 19 */
+    this.intersecciones.push(new Interseccion(400 * scale, 175 * scale, 12, 21, 29, -1)); /* 20 */
+    this.intersecciones.push(new Interseccion(487 * scale, 175 * scale, 13, -1, -1, 20)); /* 21 */
+    this.intersecciones.push(new Interseccion(188 * scale, 238 * scale, -1, 23, 27, -1)); /* 22 */
+    this.intersecciones.push(new Interseccion(228 * scale, 238 * scale, 17, 24, -1, 22)); /* 23 */
+    this.intersecciones.push(new Interseccion(291 * scale, 238 * scale, 18, 25, -1, 23)); /* 24 */
+    this.intersecciones.push(new Interseccion(338 * scale, 238 * scale, -1, -1, 28, 24)); /* 25 */
+    this.intersecciones.push(new Interseccion(125 * scale, 300 * scale, 15, 27, 33, -1)); /* 26 */
+    this.intersecciones.push(new Interseccion(188 * scale, 300 * scale, 22, -1, 30, 26)); /* 27 */
+    this.intersecciones.push(new Interseccion(338 * scale, 300 * scale, 25, 29, 31, -1)); /* 28 */
+    this.intersecciones.push(new Interseccion(400 * scale, 300 * scale, 20, -1, 38, 28)); /* 29 */
+    this.intersecciones.push(new Interseccion(188 * scale, 356 * scale, 27, 31, 34, -1)); /* 30 */
+    this.intersecciones.push(new Interseccion(338 * scale, 356 * scale, 28, -1, 37, 30)); /* 31 */
+    this.intersecciones.push(new Interseccion( 38 * scale, 418 * scale, -1, 33, 40, -1)); /* 32 */
+    this.intersecciones.push(new Interseccion(125 * scale, 418 * scale, 26, 34, 42, 32)); /* 33 */
+    this.intersecciones.push(new Interseccion(188 * scale, 418 * scale, 30, 35, -1, 33)); /* 34 */
+    this.intersecciones.push(new Interseccion(232 * scale, 418 * scale, -1, -1, 44, 34)); /* 35 */
+    this.intersecciones.push(new Interseccion(294 * scale, 418 * scale, -1, 37, 45, -1)); /* 36 */
+    this.intersecciones.push(new Interseccion(338 * scale, 418 * scale, 31, 38, -1, 36)); /* 37 */
+    this.intersecciones.push(new Interseccion(400 * scale, 418 * scale, 29, 39, 47, 37)); /* 38 */
+    this.intersecciones.push(new Interseccion(487 * scale, 418 * scale, -1, -1, 49, 38)); /* 39 */
+    this.intersecciones.push(new Interseccion( 38 * scale, 475 * scale, 32, 41, -1, -1)); /* 40 */
+    this.intersecciones.push(new Interseccion( 62 * scale, 475 * scale, -1, -1, 51, 40)); /* 41 */
+    this.intersecciones.push(new Interseccion(125 * scale, 475 * scale, 33, 43, 52, -1)); /* 42 */
+    this.intersecciones.push(new Interseccion(188 * scale, 475 * scale, -1, 44, 53, 42)); /* 43 */
+    this.intersecciones.push(new Interseccion(232 * scale, 475 * scale, 35, 45, -1, 43)); /* 44 */
+    this.intersecciones.push(new Interseccion(294 * scale, 475 * scale, 36, 46, -1, 44)); /* 45 */
+    this.intersecciones.push(new Interseccion(338 * scale, 475 * scale, -1, 47, 56, 45)); /* 46 */
+    this.intersecciones.push(new Interseccion(400 * scale, 475 * scale, 38, -1, 57, 46)); /* 47 */
+    this.intersecciones.push(new Interseccion(463 * scale, 475 * scale, -1, 49, 58, -1)); /* 48 */
+    this.intersecciones.push(new Interseccion(487 * scale, 475 * scale, 39, -1, -1, 48)); /* 49 */
+    this.intersecciones.push(new Interseccion( 38 * scale, 531 * scale, -1, 51, 60, -1)); /* 50 */
+    this.intersecciones.push(new Interseccion( 62 * scale, 531 * scale, 41, 52, -1, 50)); /* 51 */
+    this.intersecciones.push(new Interseccion(125 * scale, 531 * scale, 42, -1, -1, 51)); /* 52 */
+    this.intersecciones.push(new Interseccion(188 * scale, 531 * scale, 43, 54, -1, -1)); /* 53 */
+    this.intersecciones.push(new Interseccion(228 * scale, 531 * scale, -1, -1, 61, 53)); /* 54 */
+    this.intersecciones.push(new Interseccion(297 * scale, 531 * scale, -1, 56, 62, -1)); /* 55 */
+    this.intersecciones.push(new Interseccion(338 * scale, 531 * scale, 46, -1, -1, 55)); /* 56 */
+    this.intersecciones.push(new Interseccion(400 * scale, 531 * scale, 47, 58, -1, -1)); /* 57 */
+    this.intersecciones.push(new Interseccion(463 * scale, 531 * scale, 48, 59, -1, 57)); /* 58 */
+    this.intersecciones.push(new Interseccion(487 * scale, 531 * scale, -1, -1, 63, 58)); /* 59 */
+    this.intersecciones.push(new Interseccion( 38 * scale, 588 * scale, 50, 61, -1, -1)); /* 60 */
+    this.intersecciones.push(new Interseccion(228 * scale, 588 * scale, 54, 62, -1, 60)); /* 61 */
+    this.intersecciones.push(new Interseccion(297 * scale, 588 * scale, 55, 63, -1, 61)); /* 62 */
+    this.intersecciones.push(new Interseccion(487 * scale, 588 * scale, 59, -1, -1, 62)); /* 63 */
 };
-Ghost.prototype.setInterseccion = function( num ) {
-	
-	this.x = this.intersecciones[num].x;
-	this.y = this.intersecciones[num].y;
 
-	this.inter = true;
-	this.next = num;
+Ghost.prototype.setInterseccion = function(num) {
+    this.x = this.intersecciones[num].x;
+    this.y = this.intersecciones[num].y;
 
+    this.inter = true;
+    this.next = num;
 };
 
 Ghost.prototype.move = function() {
-	
-	if(this.inter){
+    if (this.inter) {
+        var i;
+        var dist = (this.dir + 2) % 4;
 
-		var i;
-		var dist = (this.dir + 2) % 4;
+        do {
+            i = Math.floor(Math.random() * 4);
+        } while (this.intersecciones[this.next].direcc[i] == -1 || i == dist);
 
-		do{
+        this.dir = i;
+        this.next = this.intersecciones[ this.next ].direcc[i];
+        this.inter = false;
+    } else {
+        /* Movemos el fantasma */
+        switch (this.dir) {
+            /* Arriba */
+            case 0:
+                this.y -= this.speed;
+                break;
 
-			i = Math.floor( Math.random() * 4 );
+            /* Abajo */
+            case 2:
+                this.y += this.speed;
+                break;
 
-		}while( this.intersecciones[this.next].direcc[i] == -1 || i == dist );
+            /* Izquierda */
+            case 3:
+                this.x -= this.speed;
+                break;
 
-		this.dir = i;
-		this.next = this.intersecciones[ this.next ].direcc[i];
-		this.inter = false;
+            /* Derecha */
+            case 1:
+                this.x += this.speed;
+                break;
+        }
 
-	}else{
-
-		/* Movemos el fantasma */
-
-		switch( this.dir ){
-
-			/* Arriba */
-			case 0:
-			
-				this.y -= this.speed;
-				break;
-			
-			/* Abajo */
-			case 2:
-			
-				this.y += this.speed;
-				break;
-			
-			/* Izquierda */
-			case 3:
-				
-				this.x -= this.speed;
-				break;
-				
-			/* Derecha */
-			case 1:
-				
-				this.x += this.speed;
-				break;
-
-		}
-
-		if( this.x > this.intersecciones[this.next].x - (this.speed * 3/2) &&
-			this.x < this.intersecciones[this.next].x + (this.speed * 3/2) &&
-			this.y > this.intersecciones[this.next].y - (this.speed * 3/2) &&
-			this.y < this.intersecciones[this.next].y + (this.speed * 3/2) )
-		{
-			this.setInterseccion( this.next );
-		}
-
-	}
-
+        if (this.x > this.intersecciones[this.next].x - (this.speed * 3/2) &&
+            this.x < this.intersecciones[this.next].x + (this.speed * 3/2) &&
+            this.y > this.intersecciones[this.next].y - (this.speed * 3/2) &&
+            this.y < this.intersecciones[this.next].y + (this.speed * 3/2))
+        {
+            this.setInterseccion(this.next);
+        }
+    }
 };
-	
+
 /******************************************************************************
 ** Punto
 ******************************************************************************/
-
-function Dot ( _x, _y, _radio ) {
-	
-	this.x = _x;
-	this.y = _y;
-	this.radio = _radio;
-	this.status = true;
-
+function Dot (_x, _y, _radio) {
+    this.x = _x;
+    this.y = _y;
+    this.radio = _radio;
+    this.status = true;
 }
 
 /* funciones del punto */
-
 Dot.prototype.draw = function() {
-	
-	context.arc( this.x, array[i].y, this.radio, 0, 2 * Math.PI );
-
+    context.arc(this.x, array[i].y, this.radio, 0, 2 * Math.PI);
 };
 
 Dot.prototype.disable = function() {
-	
-	this.status = false;
-
+    this.status = false;
 };
 
 Dot.prototype.enable = function() {
-	
-	this.status = true;
-
+    this.status = true;
 };
 
 /******************************************************************************
 ** Puntos
 ******************************************************************************/
-
 function Dots () {
-	
-	this.array = new Array();
-
+    this.array = new Array();
 }
 
-Dots.prototype.addDot = function( _x, _y, _radio) {
-	
-	this.array.push( new Dot( _x, _y, _radio ) );
-
+Dots.prototype.addDot = function(_x, _y, _radio) {
+    this.array.push(new Dot(_x, _y, _radio));
 };
 
 Dots.prototype.draw = function() {
+    context.fillStyle = "#FFF";
+    context.beginPath();
 
-	context.fillStyle = "#FFF";
-	context.beginPath();
-	
-	for( var i = 0; i < this.array.length; i++ ){
+    for (var i = 0; i < this.array.length; i++) {
+        if (this.array[i].status) {
+            context.moveTo(this.array[i].x, this.array[i].y);
+            context.arc(this.array[i].x, this.array[i].y, this.array[i].radio, 0, 2 * Math.PI);
+        }
+    }
 
-		if( this.array[i].status ){
-		
-			context.moveTo( this.array[i].x, this.array[i].y );
-			context.arc( this.array[i].x, this.array[i].y, this.array[i].radio, 0, 2 * Math.PI );
-
-		}
-
-	}
-
-	context.stroke();
-	context.fill();
-
+    context.stroke();
+    context.fill();
 };
 
-Dots.prototype.deleteDot = function( _x, _y ) {
-
-	for( var i = 0; i < this.array.length; i++ ){
-		
-		if( _x <= this.array[i].x + this.array[i].radio &&
-			_x >= this.array[i].x - this.array[i].radio &&
-			_y >= this.array[i].y - this.array[i].radio &&
-			_y <= this.array[i].y + this.array[i].radio &&
-			this.array[i].status )
-		{
-
-			this.array[i].disable();
-			updateScore();
-			return;
-
-		}
-	
-	}
-
+Dots.prototype.deleteDot = function(_x, _y) {
+    for (var i = 0; i < this.array.length; i++) {
+        if (_x <= this.array[i].x + this.array[i].radio &&
+            _x >= this.array[i].x - this.array[i].radio &&
+            _y >= this.array[i].y - this.array[i].radio &&
+            _y <= this.array[i].y + this.array[i].radio &&
+            this.array[i].status)
+        {
+            this.array[i].disable();
+            updateScore();
+            return;
+        }
+    }
 };
 
 /******************************************************************************
 ** Funciones
 ******************************************************************************/
-
 function updateScore () {
-	
-	if(++score == 50){
+    if (++score == 50) {
+        ghosts = [];
+        state = true;
+    } else if (score == 144) {
+        alert("Ganaste");
+        location.reload();
+    }
 
-		ghosts = [];
-		state = true;
-
-	}else if(score == 144){
-
-		alert("Ganaste");
-		location.reload();
-
-	}
-
-	divScore.innerHTML = "Score: " + score;
-
+    divScore.innerHTML = "Score: " + score;
 }
 
-function drawBoard(){
+function drawBoard() {
+    context.beginPath();
+    context.fillStyle="#000000";
+    context.fillRect(0,0, 420,500);
 
-	context.beginPath();
-	context.fillStyle="#000000";
-	context.fillRect( 0,0, 420,500);
-
-	context.fillStyle="#0000FF"
-	context.fillRect(0,0,420,10);//techo
-	context.fillRect(0,490,420,10);//piso
-
-
-	context.fillRect(0,10,10,160);//pared arriba izq 
-	context.fillRect(410,10,10,160);//pared arriba der
-	context.fillRect(0,310,10,190);//pared abajo izq
-	context.fillRect(410,310,10,190);//pared abajo der
+    context.fillStyle="#0000FF"
+    context.fillRect(0,0,420,10);//techo
+    context.fillRect(0,490,420,10);//piso
 
 
-	context.fillRect(50,50,30,20);// cuadro arriba izq 20ancho
-	context.fillRect(50,110,30,10);// cuadro arriba izq 10ancho
-	context.fillRect(120,50,40,20);//cuadro arriba izq 20x40
+    context.fillRect(0,10,10,160);//pared arriba izq
+    context.fillRect(410,10,10,160);//pared arriba der
+    context.fillRect(0,310,10,190);//pared abajo izq
+    context.fillRect(410,310,10,190);//pared abajo der
 
 
-	context.fillRect(340,50,30,20);//arriba der 20ancho
-	context.fillRect(340,110,30,10);//arriba der 10ancho
-	context.fillRect(260,50,40,20);//arriba der 20x40
-
-	context.fillRect(200,0,20,70);//pared arriba enmedio
-
-	context.fillRect(170,110,80,10);//T arriba  
-	context.fillRect(205,120,10,40);//T arriba 
-
-	context.fillRect(170,310,80,10);//T enmedio ****
-	context.fillRect(205,320,10,40);//T enmedio 
-
-	context.fillRect(170,400,80,10);//T abajo
-	context.fillRect(205,410,10,40);//T abajo
+    context.fillRect(50,50,30,20);// cuadro arriba izq 20ancho
+    context.fillRect(50,110,30,10);// cuadro arriba izq 10ancho
+    context.fillRect(120,50,40,20);//cuadro arriba izq 20x40
 
 
-	context.fillRect(120,160,40,10);//T acostada izq
-	context.fillRect(120,110,10,110);//T acostada izq ***
+    context.fillRect(340,50,30,20);//arriba der 20ancho
+    context.fillRect(340,110,30,10);//arriba der 10ancho
+    context.fillRect(260,50,40,20);//arriba der 20x40
 
-	context.fillRect(290,110,10,110);//T acostada der ***
-	context.fillRect(260,160,30,10);//T acostada der
+    context.fillRect(200,0,20,70);//pared arriba enmedio
 
-	context.fillRect(0,160,80,60);//cuadro gde izq arriba
-	context.fillRect(0,260,80,60);//cuadro gde izq abajo
-	context.fillRect(340,160,110,60);//cuadro gde der arriba
-	context.fillRect(340,260,100,60);//cuadro gde der abajo
+    context.fillRect(170,110,80,10);//T arriba
+    context.fillRect(205,120,10,40);//T arriba
 
-	context.fillRect(170,210,80,50); //cuadro centro
+    context.fillRect(170,310,80,10);//T enmedio ****
+    context.fillRect(205,320,10,40);//T enmedio
 
-	context.fillRect(120,260,10,60);//Linea vertical izq
-	context.fillRect(290,260,10,60);//Linea vertical der
+    context.fillRect(170,400,80,10);//T abajo
+    context.fillRect(205,410,10,40);//T abajo
 
-	context.fillRect(120,350,40,10);//Linea horizontal izq (T media)
-	context.fillRect(260,350,45,10);//Linea horizontal der (T media)
 
-	context.fillRect(50,350,30,10);//L izq  *****
-	context.fillRect(70,350,10,50);//L izq largo
+    context.fillRect(120,160,40,10);//T acostada izq
+    context.fillRect(120,110,10,110);//T acostada izq ***
 
-	context.fillRect(340,350,30,10);//L der
-	context.fillRect(340,350,10,50);//L der largo
+    context.fillRect(290,110,10,110);//T acostada der ***
+    context.fillRect(260,160,30,10);//T acostada der
 
-	context.fillRect(120,400,10,40);//T alrevez izq
-	context.fillRect(50,440,110,10);//T alrevez izq*********
+    context.fillRect(0,160,80,60);//cuadro gde izq arriba
+    context.fillRect(0,260,80,60);//cuadro gde izq abajo
+    context.fillRect(340,160,110,60);//cuadro gde der arriba
+    context.fillRect(340,260,100,60);//cuadro gde der abajo
 
-	context.fillRect(290,400,10,50);//T alrevez der
-	context.fillRect(260,440,110,10);//T alrevez der
+    context.fillRect(170,210,80,50); //cuadro centro
 
-	context.fillRect(10,400,20,10);//Linea junto pared izq
-	context.fillRect(390,400,110,10);//Linea junto pared der
+    context.fillRect(120,260,10,60);//Linea vertical izq
+    context.fillRect(290,260,10,60);//Linea vertical der
 
+    context.fillRect(120,350,40,10);//Linea horizontal izq (T media)
+    context.fillRect(260,350,45,10);//Linea horizontal der (T media)
+
+    context.fillRect(50,350,30,10);//L izq  *****
+    context.fillRect(70,350,10,50);//L izq largo
+
+    context.fillRect(340,350,30,10);//L der
+    context.fillRect(340,350,10,50);//L der largo
+
+    context.fillRect(120,400,10,40);//T alrevez izq
+    context.fillRect(50,440,110,10);//T alrevez izq*********
+
+    context.fillRect(290,400,10,50);//T alrevez der
+    context.fillRect(260,440,110,10);//T alrevez der
+
+    context.fillRect(10,400,20,10);//Linea junto pared izq
+    context.fillRect(390,400,110,10);//Linea junto pared der
 };
 
-function doKeyDown ( event ) {
-	
-	/* Si no ha terminado el sonido del intro no dejamos que cambie de
-	** direccion */
+function doKeyDown (event) {
+    /* Si no ha terminado el sonido del intro no dejamos que cambie de
+    ** direccion */
+    if (!introSound.ended)
+        return;
 
-	if( !introSound.ended )
-		return;
+    switch (event.keyCode) {
+        /* Arriba */
+        case 38:
+            pacman.changeDir(0);
+            break;
 
-	switch( event.keyCode ){
-	
-		/* Arriba */
-		case 38:
-		
-			pacman.changeDir( 0 );
-			break;
-		
-		/* Abajo */
-		case 40:
-			
-			pacman.changeDir( 2 );
-			break;
-		
-		/* Izquierda */
-		case 37:
-			
-			pacman.changeDir( 3 );
-			break;
-			
-		/* Derecha */
-		case 39:
-			
-			pacman.changeDir( 1 );
-			break;
-		
-	}
+        /* Abajo */
+        case 40:
+            pacman.changeDir(2);
+            break;
 
+        /* Izquierda */
+        case 37:
+            pacman.changeDir(3);
+            break;
+
+        /* Derecha */
+        case 39:
+            pacman.changeDir(1);
+            break;
+    }
 };
 
 function draw () {
-	
-	if( state && ++ind == 30){
+    if (state && ++ind == 30) {
+        ind = 0;
+        ghosts.push(new Ghost("asd"));
+    }
 
-		ind = 0;
-		ghosts.push( new Ghost( "asd" ) );
+    /* Dibujamos el tablero y los puntos */
+    drawBoard();
+    dots.draw();
 
-	}
+    /* Movemos y dibujamos los fantasmas */
+    for (var i = 0; i < ghosts.length; i++) {
+        ghosts[i].move();
+        ghosts[i].draw();
+    }
 
-	/* Dibujamos el tablero y los puntos */
+    /* Checamos si mover a pacman */
+    if (pacman.status)
+        pacman.move();
 
-	drawBoard();
-	dots.draw();
-	
-	/* Movemos y dibujamos los fantasmas */
-
-	for(var i = 0; i < ghosts.length; i++){
-
-		ghosts[i].move();
-		ghosts[i].draw();
-
-	}
-
-	/* Checamos si mover a pacman */
-
-	if( pacman.status )
-		pacman.move();
-
-	/* Dibujamos a pacman */
-	
-	pacman.draw();
-
+    /* Dibujamos a pacman */
+    pacman.draw();
 }
 
 function fillDots () {
-	
-	var espacio = 0;
+    var espacio = 0;
 
-	dots.addDot( 30, 34, 10 );
-	dots.addDot( 390, 34, 10 );
-	dots.addDot( 30, 470, 10 );
-	dots.addDot( 390, 470, 10 );
+    dots.addDot(30, 34, 10);
+    dots.addDot(390, 34, 10);
+    dots.addDot(30, 470, 10);
+    dots.addDot(390, 470, 10);
 
-	for ( var i = 4; i <= 8; i++ ){				
-		
-		espacio += 20;					
-		dots.addDot( 30, 40 + espacio, 3 );
+    for (var i = 4; i <= 8; i++) {
+        espacio += 20;
+        dots.addDot(30, 40 + espacio, 3);
+    }
 
-	}
-
- 	espacio = 0;
-	for ( var i = 9; i <= 11; i++ ){			
-		
-		espacio += 22;
-		dots.addDot( 30 + espacio, 140, 3 );
-
-	}
+    espacio = 0;
+    for (var i = 9; i <= 11; i++) {
+        espacio += 22;
+        dots.addDot(30 + espacio, 140, 3);
+    }
 
 
-	espacio = 0;
-	for ( var i = 12; i <= 18; i++ ){			
-		
-		espacio += 22;
-		dots.addDot( 30 + espacio, 35, 3 );
+    espacio = 0;
+    for (var i = 12; i <= 18; i++) {
+        espacio += 22;
+        dots.addDot(30 + espacio, 35, 3);
+    }
 
-	}
+    espacio = 0;
+    for (var i = 19; i <= 36; i++) {
+        espacio += 22;
+        dots.addDot(96, 31 + espacio, 3);
+    }
 
-	espacio = 0;
-	for ( var i = 19; i <= 36; i++ ){			
-		
-		espacio += 22;
-		dots.addDot( 96, 31 + espacio, 3 );
+    espacio = 0;
+    for (var i = 37; i <= 51; i++) {
+        espacio += 22;
+        dots.addDot(30 + espacio, 470, 3);
+    }
 
-	}
+    espacio = 0;
+    for (var i = 52; i <= 53; i++) {
+        espacio += 22;
+        dots.addDot(30, 470 - espacio, 3);
+    }
 
-	espacio = 0;
-	for ( var i = 37; i <= 51; i++ ){			
-		
-		espacio += 22;	
-		dots.addDot( 30 + espacio, 470, 3 );
+    espacio = 0;
+    for (var i = 54; i <= 55; i++) {
+        espacio += 22;
+        dots.addDot(30 + espacio, 428, 3);
+    }
 
-	}
+    espacio = 0;
+    for (var i = 56; i <= 57; i++) {
+        espacio += 22;
+        dots.addDot(30, 470 - espacio, 3);
+    }
 
-	espacio = 0;
-	for ( var i = 52; i <= 53; i++ ){			
-		
-		espacio += 22;
-		dots.addDot( 30, 470 - espacio, 3 );
+    espacio = 0;
+    for (var i = 59; i <= 59; i++) {
+        espacio += 22;
+        dots.addDot(52, 407 - espacio, 3);
+    }
 
-	}
+    espacio = 0;
+    for (var i = 60; i <= 61; i++) {
+        espacio += 22;
+        dots.addDot(30 + espacio, 341, 3);
+    }
 
-	espacio = 0;
-	for ( var i = 54; i <= 55; i++ ){			
-		
-		espacio += 22;					
-		dots.addDot( 30 + espacio, 428, 3 );
+    espacio = 0;
+    for (var i = 62; i <= 68; i++) {
+        espacio += 20;
+        dots.addDot(220 + espacio, 35, 3);
+    }
 
-	}
+    espacio = 0;
+    for (var i = 69; i <= 70; i++) {
+        espacio += 20;
+        dots.addDot(240, 35 + espacio, 3);
+    }
 
-	espacio = 0;
-	for ( var i = 56; i <= 57; i++ ){
-		
-		espacio += 22;
-		dots.addDot( 30, 470 - espacio, 3 );
+    espacio = 0;
+    for (var i = 71; i <= 86; i++) {
+        espacio += 19;
+        dots.addDot(40 + espacio, 97, 3);
+    }
 
-	}
+    espacio = 0;
+    for (var i = 87; i <= 88; i++) {
+        espacio += 20;
+        dots.addDot(184, 35 + espacio, 3);
+    }
 
-	espacio = 0;
-	for ( var i = 59; i <= 59; i++ ){			
-		
-		espacio += 22;
-		dots.addDot( 52, 407 - espacio, 3 );
+    espacio = 0;
+    for (var i = 89; i <= 90; i++) {
+        espacio += 20;
+        dots.addDot(320, 35 + espacio, 3);
+    }
 
-	}
+    espacio = 0;
+    for (var i = 91; i <= 106; i++) {
+        espacio += 20;
+        dots.addDot(320, 105 + espacio, 3);
+    }
 
-	espacio = 0;
-	for ( var i = 60; i <= 61; i++ ){			
-		
-		espacio += 22;
-		dots.addDot( 30 + espacio, 341, 3 );
+    espacio = 0;
+    for (var i = 107; i <= 111; i++) {
+        espacio += 21;
+        dots.addDot(390, 34 + espacio, 3);
+    }
 
-	}
+    espacio = 0;
+    for (var i = 112; i <= 112; i++) {
+        espacio += 22;
+        dots.addDot(365, 75 + espacio, 3);
+    }
 
-	espacio = 0;
-	for ( var i = 62; i <= 68; i++ ){			
-		
-		espacio += 20;
-		dots.addDot( 220 + espacio, 35, 3 );
+    espacio = 0;
+    for (var i = 113; i <= 114; i++) {
+        espacio += 21;
+        dots.addDot(385 - espacio, 139, 3);
+    }
 
-	}
+    espacio = 0;
+    for (var i = 115; i <= 117; i++) {
+        espacio += 22;
+        dots.addDot(9 + espacio, 245, 3);
+    }
 
-	espacio = 0;
-	for ( var i = 69; i <= 70; i++ ){			
-		
-		espacio += 20;
-		dots.addDot( 240, 35 + espacio, 3 );
+    espacio = 0;
+    for (var i = 118; i <= 120; i++) {
+        espacio += 20;
+        dots.addDot(95 + espacio, 245, 3);
+    }
 
-	}
+    espacio = 0;
+    for (var i = 121; i <= 123; i++) {
+        espacio += 20;
+        dots.addDot(240 + espacio, 245, 3);
+    }
 
-	espacio = 0;
-	for ( var i = 71; i <= 86; i++ ){			
-		
-		espacio += 19;					
-		dots.addDot( 40 + espacio, 97, 3 );
-
-	}
-
-	espacio = 0;
-	for ( var i = 87; i <= 88; i++ ){			
-		
-		espacio += 20;
-		dots.addDot( 184, 35 + espacio, 3 );
-
-	}
-
-	espacio = 0;
-	for ( var i = 89; i <= 90; i++ ){			
-		
-		espacio += 20;
-		dots.addDot( 320, 35 + espacio, 3 );
-
-	}
-
-	espacio = 0;
-	for ( var i = 91; i <= 106; i++ ){			
-		
-		espacio += 20;
-		dots.addDot( 320, 105 + espacio, 3 );
-
-	}
-
-	espacio = 0;
-	for ( var i = 107; i <= 111; i++ ){			
-		
-		espacio += 21;
-		dots.addDot( 390, 34 + espacio, 3 );
-
-	}
-
-	espacio = 0;
-	for ( var i = 112; i <= 112; i++ ){			
-		
-		espacio += 22;
-		dots.addDot( 365, 75 + espacio, 3 );
-
-	}
-
-	espacio = 0;
-	for ( var i = 113; i <= 114; i++ ){			
-		
-		espacio += 21;
-		dots.addDot( 385 - espacio, 139, 3 );
-	}
-
-	espacio = 0;
-	for ( var i = 115; i <= 117; i++ ){
-		
-		espacio += 22;
-		dots.addDot( 9 + espacio, 245, 3 );			
-
-	}
-
-	espacio = 0;
-	for ( var i = 118; i <= 120; i++ ){			
-		
-		espacio += 20;
-		dots.addDot( 95 + espacio, 245, 3 );
-
-	}
-
-	espacio = 0;
-	for ( var i = 121; i <= 123; i++ ){			
-		
-		espacio += 20;
-		dots.addDot( 240 + espacio, 245, 3 );
-
-	}
-
-	espacio = 0;
-	for ( var i = 124; i <= 127; i++ ){			
-		
-		espacio += 22;
-		dots.addDot( 298 + espacio, 245, 3 );
-
-	}
+    espacio = 0;
+    for (var i = 124; i <= 127; i++) {
+        espacio += 22;
+        dots.addDot(298 + espacio, 245, 3);
+    }
 
 
-	espacio = 0;
-	for ( var i = 129; i <= 129; i++ ){			
-		
-		espacio += 22;
-		dots.addDot( 52, 450-espacio*2 , 3 );
+    espacio = 0;
+    for (var i = 129; i <= 129; i++) {
+        espacio += 22;
+        dots.addDot(52, 450-espacio*2 , 3);
+    }
 
-	}
+    espacio = 0;
+    for (var i = 130; i <= 132; i++) {
+        espacio += 22;
+        dots.addDot(30, 407 - espacio, 3);
+    }
 
-	espacio = 0;
-	for ( var i = 130; i <= 132; i++ ){			
-		
-		espacio += 22;
-		dots.addDot( 30, 407 - espacio, 3 );
+    espacio = 0;
+    for (var i = 133; i <= 135; i++) {
+        espacio += 21;
+        dots.addDot(390, 407 - espacio, 3);
+    }
 
-	}
+    espacio = 0;
+    for (var i = 136; i <= 138; i++) {
+        espacio += 20.5;
+        dots.addDot(365, 447 - espacio, 3);
+    }
 
-	espacio = 0;
-	for ( var i = 133; i <= 135; i++ ){			
-		
-		espacio += 21;
-		dots.addDot( 390, 407 - espacio, 3 );
+    espacio = 0;
+    for (var i = 139; i <= 140; i++) {
+        espacio += 21.5;
+        dots.addDot(390, 470 - espacio, 3);
+    }
 
-	}
+    espacio = 0;
+    for (var i = 141; i <= 141; i++) {
+        espacio += 21.5;
+        dots.addDot(343, 448 - espacio, 3);
+    }
 
-	espacio = 0;
-	for ( var i = 136; i <= 138; i++ ){			
-		
-		espacio += 20.5;
-		dots.addDot( 365, 447 - espacio, 3 );
+    espacio = 0;
+    for (var i = 142; i <= 143; i++) {
 
-	}
-
-	espacio = 0;
-	for ( var i = 139; i <= 140; i++ ){			
-		
-		espacio += 21.5;
-		dots.addDot( 390, 470 - espacio, 3 );
-
-	}
-
-	espacio = 0;
-	for ( var i = 141; i <= 141; i++ ){			
-		
-		espacio += 21.5;
-		dots.addDot( 343, 448 - espacio, 3 );
-
-	}
-
-	espacio = 0;
-	for ( var i = 142; i <= 143; i++ ){				//***	
-		
-		espacio += 22;
-		dots.addDot( 322+espacio, 342.5, 3 );
-
-	}
-
+        espacio += 22;
+        dots.addDot(322+espacio, 342.5, 3);
+    }
 }
-
 
 /******************************************************************************
 ** Main
 ******************************************************************************/
-	
-var c = document.getElementById( "canvas" );
-var context = c.getContext( "2d" );
-var divScore = document.getElementById( "score" );
-var pacman = new Pacman( context, 10, 260, 332 );
+var c = document.getElementById("canvas");
+var context = c.getContext("2d");
+var divScore = document.getElementById("score");
+var pacman = new Pacman(context, 10, 260, 332);
 var dots = new Dots();
 var score = 0;
 var ghosts = new Array();
 var ind = 0;
-ghosts.push( new Ghost("#FF0000") );/* rojo */
-ghosts.push( new Ghost("#FFCCFF") );/* rosado */
-ghosts.push( new Ghost("#FFCC66") );/* naranja */
-ghosts.push( new Ghost("#00FFFF") );/* cian */
+ghosts.push(new Ghost("#FF0000"));/* rojo */
+ghosts.push(new Ghost("#FFCCFF"));/* rosado */
+ghosts.push(new Ghost("#FFCC66"));/* naranja */
+ghosts.push(new Ghost("#00FFFF"));/* cian */
 var state = false;
 
 /* Mandamos a llenar el arreglo de puntos */
-
 fillDots();
 
 /* Dibujamos */
-
 draw();
 
 /* Asignamos la funcion a realziar en el momento de que se presione una tecla */
-
-window.addEventListener('keydown',doKeyDown,true );
+window.addEventListener('keydown',doKeyDown,true);
 
 /* Establecemos el sonido del intro y agregamos una función para que cuando acabe el sonido empiece a moverse pacmans */
-
-var introSound = new Audio( "intro.mp3" );
+var introSound = new Audio("intro.mp3");
 introSound.play();
 
-introSound.addEventListener( 'ended', function(){
+introSound.addEventListener('ended', function() {
 pacman.changeAnim();
-var animationLoop = setInterval( draw, 30 );
-} );
+var animationLoop = setInterval(draw, 30);
+});
 
 </script></body></html>
